@@ -99,36 +99,9 @@ serviceCalendar.post('/calendar/event', async (c) => {
   
   console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Parsing request body`);
   
-  // Parse body with timeout protection - c.req.json() can hang in Vercel
-  let body: Body;
-  try {
-    // Try to parse with a reasonable timeout
-    const parsePromise = c.req.json<Body>();
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Body parsing timeout after 10s')), 10000);
-    });
-    
-    body = await Promise.race([parsePromise, timeoutPromise]);
-    console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Body parsed successfully`);
-  } catch (parseErr: any) {
-    console.error(`❌ Failed to parse body after ${Date.now() - startTime}ms:`, parseErr.message);
-    
-    // Try alternative: get raw body and parse manually
-    try {
-      console.log('🔄 Attempting manual body parse...');
-      const rawBody = await c.req.text();
-      body = JSON.parse(rawBody) as Body;
-      console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Manual parse successful`);
-    } catch (manualErr: any) {
-      console.error('❌ Manual parse also failed:', manualErr.message);
-      return c.json({ 
-        error: 'request_body_parse_failed',
-        details: 'Unable to parse request body',
-        parseError: parseErr.message,
-        manualError: manualErr.message
-      }, 400);
-    }
-  }
+  // Simple body parsing - let Hono handle it naturally
+  const body = await c.req.json<Body>();
+  console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Body parsed successfully`);
   
   // Validar campos requeridos
   if (!body.calendarId) {

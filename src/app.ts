@@ -26,15 +26,17 @@ app.use('*', cors({
 app.use('*', logger());
 
 // Rate limiting middleware (requires Redis)
-if (config.rateLimit.enabled) {
-  console.log('Rate limiting enabled');
-  app.use('/api/*', rateLimit({
-    windowMs: config.rateLimit.windowMs,
-    maxRequests: config.rateLimit.maxRequests
-  }));
-} else {
-  console.log('Rate limiting disabled');
-}
+// TEMPORARILY DISABLED - causing body parsing issues in Vercel
+// if (config.rateLimit.enabled) {
+//   console.log('Rate limiting enabled');
+//   app.use('/api/*', rateLimit({
+//     windowMs: config.rateLimit.windowMs,
+//     maxRequests: config.rateLimit.maxRequests
+//   }));
+// } else {
+//   console.log('Rate limiting disabled');
+// }
+console.log('⚠️  Rate limiting DISABLED to fix body parsing timeout');
 
 // Health check
 app.get('/', (c) => {
