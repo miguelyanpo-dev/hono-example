@@ -16,11 +16,12 @@
 ## Key Changes
 
 ### Timeout Protection Layers
-1. **Request body parsing**: 3s timeout
-2. **Google Auth initialization**: 5s timeout with fallback
-3. **Calendar client init**: 8s timeout
-4. **Availability check**: 10s timeout
-5. **Event creation**: 15s timeout
+1. **Google Auth initialization**: 5s timeout with fallback to direct auth
+2. **Calendar client init**: 8s timeout (includes auth)
+3. **Availability check**: 10s timeout
+4. **Event creation**: 15s timeout
+
+**Note**: Request body parsing is handled natively by Hono/Vercel without timeout wrapper to avoid interference.
 
 ### Fallback Mechanisms
 - If auth caching fails → use direct auth
@@ -47,11 +48,15 @@ vercel --prod
 
 ### If Issues Persist
 Check logs for specific timeout messages:
-- `Request body parsing timeout` → Network/payload issue
-- `Auth client initialization timeout` → Google Auth issue
+- `Auth client initialization timeout` → Google Auth service slow/unavailable
 - `Calendar client initialization timeout` → Overall auth problem
 - `Google Calendar API timeout while checking availability` → Google API slow
 - `Google Calendar API timeout while creating event` → Google API slow
+
+If body parsing is slow (>3s), check:
+- Request payload size
+- Network latency to Vercel
+- Vercel function cold start time
 
 ## Test Request
 

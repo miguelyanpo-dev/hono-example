@@ -31,10 +31,11 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMsg: string
 ```
 
 Applied to critical operations:
-- **Request body parsing**: 3-second timeout
-- **Calendar client initialization**: 8-second timeout
+- **Calendar client initialization**: 8-second timeout (with 5s auth timeout inside)
 - **Availability check**: 10-second timeout
 - **Event creation**: 15-second timeout
+
+**Note**: Request body parsing is NOT timed out as it interferes with Hono/Vercel's internal request handling.
 
 ### 2. Protected Google Auth Initialization (`src/lib/google.ts`)
 Added timeout and fallback to Google Auth client initialization:
@@ -76,11 +77,12 @@ Added detailed timing logs at each step:
 Changed `getServiceAccountCalendarClient()` to async and updated all call sites to use `await`
 
 ## Expected Results
-- ⏱️ Maximum request time: ~26 seconds (3+8+10+15 = 36s theoretical, but operations overlap)
-- 🛡️ Protected against hanging at every step
+- ⏱️ Maximum request time: ~23 seconds (8+10+15 = 33s theoretical, but operations overlap)
+- 🛡️ Protected against hanging at critical Google API steps
 - ✅ Clear error messages identifying which step timed out
 - 📊 Detailed timing logs for performance analysis
 - 🔄 Fallback mechanisms ensure requests proceed even if auth caching fails
+- 🚀 Body parsing handled natively by Hono/Vercel without interference
 
 ## Monitoring
 Watch for these log patterns:
@@ -99,7 +101,6 @@ Watch for these log patterns:
 - `✅ Event created successfully - Total time: Xms`
 
 **Timeout errors (now specific):**
-- `Request body parsing timeout` (>3s)
 - `Calendar client initialization timeout` (>8s)
 - `Auth client initialization timeout` (>5s within the 8s window)
 - `Google Calendar API timeout while checking availability` (>10s)

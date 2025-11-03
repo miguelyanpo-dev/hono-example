@@ -98,12 +98,11 @@ serviceCalendar.post('/calendar/event', async (c) => {
   };
   
   console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Parsing request body`);
-  const body = await withTimeout(
-    c.req.json<Body>(),
-    3000,
-    'Request body parsing timeout'
-  );
-  console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Body parsed`);
+  
+  // Don't timeout body parsing - Hono handles this internally
+  // Timeouts here can interfere with Vercel's request handling
+  const body = await c.req.json<Body>();
+  console.log(`⏱️  Time elapsed: ${Date.now() - startTime}ms - Body parsed successfully`);
   
   // Validar campos requeridos
   if (!body.calendarId) {
